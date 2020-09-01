@@ -1,2 +1,3 @@
 # DSD
-Digital Systems Design
+Digital Systems Design repository
+Created by Mark Dresden
