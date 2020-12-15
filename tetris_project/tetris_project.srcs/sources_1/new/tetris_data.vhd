@@ -48,7 +48,9 @@ architecture BEHV of TETRIS_DATA is
  signal tetrimino_hold : TETRIMINO_TYPE;
  signal tetrimino_hold_null : STD_LOGIC;
 
- type intarray is array(0 to 3) of INTEGER;
+ type intarray is array(0 to 3) of INTEGER; --Creates arrays that will be used to create the ghost piece
+ type coordinate is array(0 to 1) of INTEGER;
+ type coordarray is array(0 to 3) of coordinate;
 
 begin
 
@@ -312,6 +314,7 @@ k - 1).state;
 tetrimino_null)
 variable distances : intarray;
 variable minDistance : INTEGER := 0;
+variable coords: coordarray;
  begin
 
 if tetrimino_null = '0' then
@@ -333,23 +336,38 @@ minDistance := distances(2);
 else minDistance := distances(3);
 end if;
 
+
+for i in 0 to 3 loop
+coords(i)(0) := tetrimino_data.tiles(i).x;
+coords(i)(1) := tetrimino_data.tiles(i).y;
+end loop;
+
+
+
  for x in 0 to BOARD_WIDTH - 1 loop
  for y in 0 to BOARD_HEIGHT - 1 loop
+ if ((x = coords(0)(0) and y = coords(0)(1)) or (x = coords(1)(0) and y = coords(1)(1)) or (x = coords(2)(0) and y = coords(2)(1)) or (x = coords(3)(0) and y = coords(3)(1))) then
+ board_view(x,y).shape <= tetrimino_data.shape;
+ board_view(x,y).state <= "01";
+ elsif ((x = coords(0)(0) and y = coords(0)(1)+minDistance) or (x = coords(1)(0) and y = coords(1)(1)+minDistance) or (x = coords(2)(0) and y = coords(2)(1)+minDistance) or (x = coords(3)(0) and y = coords(3)(1)+minDistance)) then
+ board_view(x,y).state <= "10";
+ else
  board_view(x, y).shape <= board_data(x,y).shape;
  board_view(x, y).state <= board_data(x,y).state;
+ end if;
  end loop;
  end loop;
  
- for i in 0 to 3 loop
- board_view(tetrimino_data.tiles(i).x,
- tetrimino_data.tiles(i).y).shape <= tetrimino_data.shape;
- board_view(tetrimino_data.tiles(i).x,
- tetrimino_data.tiles(i).y).state <= "01";
- board_view(tetrimino_data.tiles(i).x,
- tetrimino_data.tiles(i).y + minDistance).state <= "10";
+ 
+ else
+ for x in 0 to BOARD_WIDTH - 1 loop
+ for y in 0 to BOARD_HEIGHT - 1 loop
+ board_view(x,y).shape <= tetrimino_data.shape;
+ board_view(x,y).state <= "00";
  end loop;
+ end loop;
+ 
  end if;
-
  end process;
 
  board <= board_view;
